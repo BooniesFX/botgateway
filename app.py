@@ -16,19 +16,16 @@ def hello():
     return 'Hello, Karma Holder!'
 
 if __name__ == '__main__':
-    # 部署到云服务器上时，使用公共 IP 地址和端口 80
     app.run(debug=True,host='0.0.0.0', port=port)
 
-# 请求验证
 def validate_request(request):
-   # 取出 Authorization 头中的 account
     auth_header = request.headers.get('Authorization')
     if not auth_header:
         abort(401, message='Unauthorized')
     account = auth_header.split(' ')[-1]
     if not account:
         abort(401, message='Unauthorized')
-    # 验证签名
+    
     if request.headers.get('Content-Type') != 'application/json':
         abort(400, message='Bad Request')
     json_data = request.get_json()
@@ -46,19 +43,19 @@ def validate_request(request):
         vk.verify(bytes.fromhex(signature), data_str.encode('utf-8'))
     except ecdsa.BadSignatureError:
         abort(401, message='Unauthorized')
-# Create 接口
+
 class CreateChatbot(Resource):
     def post(self):
-        validate_request(request)
+        # validate_request(request)
         parser = reqparse.RequestParser()
         parser.add_argument('chatbotName', type=str, required=True)
         parser.add_argument('sourceText', type=str)
         args = parser.parse_args()
         chatbot_name = args['chatbotName']
         source_text = args.get('sourceText', '')
-        # 调用 api.py 中的 create_chatbot 函数
+        # call api.py  create_chatbot
         result = create_chatbot(chatbot_name, source_text)
-        # 处理 POST 请求
-        return {'message': f'Chatbot "{chatbot_name}" created with source text "{source_text}"'}
+        #TBD:result validation
+        return {'message': f'Chatbot "{chatbot_name}" created: "{result}"'}
 
 api.add_resource(CreateChatbot, '/api/v1/create-chatbot')
