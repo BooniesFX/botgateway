@@ -1,6 +1,6 @@
 import os,datetime,time,json,ssl,threading,signal
 from dotenv import load_dotenv
-from api import
+from api import BotAPI
 import numpy as np
 from nostr.relay_manager import RelayManager
 from nostr.filter import Filter, Filters
@@ -15,6 +15,8 @@ load_dotenv()
 test_npub = os.getenv('TEST_NPUB')
 test_nsec = os.getenv('TEST_NSEC')
 test_name = os.getenv('TEST_NAME')
+api_key = os.getenv('API_KEY')
+botid = os.getenv('BOT_ID')
 
 class NostrBot:
     def __init__(self, relays: str,name: str, pub: str,sec: str) -> None:
@@ -40,7 +42,8 @@ class NostrBot:
         request = [ClientMessageType.REQUEST,subscription_id]
         request.extend(filters.to_json_array())
         self.relay_manager.add_subscription_on_all_relays(subscription_id, filters)
-        
+        # setup bot
+        bot = BotAPI(chatbot_name=test_name, chatbot_id=botid,api_key=api_key)
         while not stop_event.is_set():
             while(self.relay_manager.message_pool.has_notices()):
                 notice_msg = self.relay_manager.message_pool.get_notice()
@@ -58,7 +61,9 @@ class NostrBot:
                         msg = self.private_key.decrypt_message(event_msg.event.content,event_msg.event.public_key)
                         print(f"decrypt content:{msg}")
                         # test call botapi
-
+                        print(f"message to {bot.chatbot_name}")
+                        resp = bot.message_chatbot(msg)
+                        print(f"response content:{resp}")
             time.sleep(round_sec)
 
         print("close all connnections")
@@ -97,8 +102,10 @@ class NostrBot:
     def close_connections(self):
         self.relay_manager.close_all_relay_connections()
 
-def signal_handler(signum,frame):
+def signal_handler(signum,event):
     print("Received signal:", signum)
+    time.sleep(2)
+    exit(0)
 
 if __name__ == '__main__':
     NewBot = NostrBot("relays.default",test_name,test_npub,test_nsec)
