@@ -17,7 +17,7 @@ def create_new_chatbot(chatbot_name, source_text):
         return response.json()
 
 class BotAPI:
-    def __init__(self, chatbot_name: str,chatbot_id: str, api_key: str,source_text=None, link_array=None,temp=0.7):
+    def __init__(self, chatbot_name: str,chatbot_id: str, api_key: str,source_text=None, link_array=None,temp=0.8):
         self.chatbot_name=chatbot_name
         self.chatbot_id=chatbot_id
         self.api_key=api_key
@@ -25,21 +25,27 @@ class BotAPI:
         self.link_array = link_array
         self.temp=temp
     
-    def message_chatbot(self,message):
+    # message
+    # [{ "content": "How can I help you?", "role": "assistant" },
+    # { "content": "What is chatbase?", "role": "user" }]
+    # type: npub+"-"+reply"/"at"/"dm" 
+    # Exg:npub18475kxuy5d9f7j82rdcg0t9d3fnsryq7772akyzus6gng58atvfqfsjcce-reply
+    def message_chatbot(self,conv_id,message):
         headers = {
-            'Authorization': f'Bearer {self.api_key}',
+            'Authorization':'Bearer {self.api_key}',
             'Content-Type': 'application/json'
         }
         data = {
             "messages": message,
             "chatbotId": self.chatbot_id,
             "stream": False,
-            "temperature": self.temp
+            "temperature": self.temp,
+            "conversationId": conv_id
         }
-
-        response = requests.post(url+"/chat", headers=headers, data=json.dumps(data))
+        json_request = json.dumps(data)
+        print("request:", json_request)
+        response = requests.post(url+"/chat", headers=headers, data=json_request)
         json_data = response.json()
-
         if response.status_code == 200:
             print("response:", json_data['text'])
         else:
