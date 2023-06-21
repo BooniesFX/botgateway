@@ -37,7 +37,7 @@ class NostrBot:
         self.npub= pub
         self.private_key=PrivateKey.from_nsec(sec)
 
-    def connect_relays(self,stop_event,round_sec=10):
+    def connect_relays(self,stop_event,round_sec=5):
         relays = np.loadtxt(self.relay_file, delimiter=';',dtype='str')
         print(f"start connecting to {len(relays)} relays at{datetime.datetime.now()}")
         for r in relays:
@@ -76,24 +76,31 @@ class NostrBot:
                             print(f"decrypt content:{msg}")
                             # test call botapi
                             print(f"message to {bot.chatbot_name}")
-                            resp = bot.message_chatbot(msg)
-                            print(f"response content:{resp}")
+                            message=[
+                                    {"content": "", "role": "assistant"},
+                                    {"content": f"{msg}", "role": "user"}
+                                ]
+                            id = send_pub+"-dm"
+                            resp = bot.message_chatbot(id,message)
+                            # print(f"response content:{resp}")
                         if event_msg.event.kind == EventKind.TEXT_NOTE:
-                            # WIP, just use the note content
-                            # more content is better 
-                            message=[{ "content": "hello?", "role": "assistant" },
-                                    { "content": event_msg.event.content, "role": "user" }]
+                            # test more content is better,don`t how to find the replied note
+                            # just use the note msg here
+                            message=[
+                                    {"content": "How can I help you?", "role": "assistant"},
+                                    {"content": f"{event_msg.event.content}", "role": "user"}
+                                ]
                             id = send_pub+"-note"
                             resp = bot.message_chatbot(id,message)
-                            print(f"response content:{resp}")
+                            # print(f"response content:{resp}")
                 time.sleep(round_sec)
         except:
             print("something wrong happend clean the context")
             print("close all connnections")
             self.relay_manager.close_all_relay_connections()
-        finally:
-            print("close all connnections")
-            self.relay_manager.close_all_relay_connections()
+
+        print("close all connnections")
+        self.relay_manager.close_all_relay_connections()
         exit()
 
         
@@ -133,7 +140,6 @@ class NostrBot:
 def signal_handler(signum,frame,event):
     print("Received signal:", signum)
     event.set()
-    time.sleep(5)
     exit()
 
 if __name__ == '__main__':

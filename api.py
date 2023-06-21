@@ -1,7 +1,8 @@
 import requests
 import json
 
-url = 'https://chatbase.co/api/v1'
+url = 'https://www.chatbase.co/api/v1'
+test_url = 'https://localhost:5001/api/v1'
 
 def create_new_chatbot(chatbot_name, source_text):  
         headers = {
@@ -32,19 +33,20 @@ class BotAPI:
     # Exg:npub18475kxuy5d9f7j82rdcg0t9d3fnsryq7772akyzus6gng58atvfqfsjcce-reply
     def message_chatbot(self,conv_id,message):
         headers = {
-            'Authorization':'Bearer {self.api_key}',
+            'Authorization':f'Bearer {self.api_key}',
             'Content-Type': 'application/json'
         }
         data = {
             "messages": message,
-            "chatbotId": self.chatbot_id,
+            "chatbotId": f"{self.chatbot_id}",
             "stream": False,
             "temperature": self.temp,
             "conversationId": conv_id
         }
         json_request = json.dumps(data)
-        print("request:", json_request)
-        response = requests.post(url+"/chat", headers=headers, data=json_request)
+        # print("header:",headers)
+        # print("request:", json_request)
+        response = requests.post(url+f"/chat", headers=headers, data=json_request)
         json_data = response.json()
         if response.status_code == 200:
             print("response:", json_data['text'])

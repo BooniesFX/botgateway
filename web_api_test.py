@@ -1,6 +1,5 @@
-from flask import Flask, request
+from flask import Flask
 from flask_restful import Api, Resource, reqparse, abort
-from api import create_chatbot
 from dotenv import load_dotenv
 import os
 from ecdsa import SigningKey
@@ -13,7 +12,7 @@ api = Api(app)
 
 @app.route('/')
 def hello():
-    return 'Hello, Karma Holder!'
+    return 'Hello, Karma Tester!'
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0', port=port)
@@ -44,18 +43,28 @@ def validate_request(request):
     except ecdsa.BadSignatureError:
         abort(401, message='Unauthorized')
 
-class CreateChatbot(Resource):
-    def post(self):
-        # validate_request(request)
-        parser = reqparse.RequestParser()
-        parser.add_argument('chatbotName', type=str, required=True)
-        parser.add_argument('sourceText', type=str)
-        args = parser.parse_args()
-        chatbot_name = args['chatbotName']
-        source_text = args.get('sourceText', '')
-        # call api.py  create_chatbot
-        result = create_chatbot(chatbot_name, source_text)
-        #TBD:result validation
-        return {'message': f'Chatbot "{chatbot_name}" created: "{result}"'}
+class MessageBot(Resource):
+     def post(self):
+         print(request.get_json())
+        
 
-api.add_resource(CreateChatbot, '/api/v1/create-chatbot')
+
+
+api.add_resource(MessageBot, '/api/v1/chat')
+
+
+# class CreateChatbot(Resource):
+#     def post(self):
+#         # validate_request(request)
+#         parser = reqparse.RequestParser()
+#         parser.add_argument('chatbotName', type=str, required=True)
+#         parser.add_argument('sourceText', type=str)
+#         args = parser.parse_args()
+#         chatbot_name = args['chatbotName']
+#         source_text = args.get('sourceText', '')
+#         # call api.py  create_chatbot
+#         # result = create_chatbot(chatbot_name, source_text)
+#         # TBD:result validation
+#         return {'message': f'Chatbot "{chatbot_name}" created: "{result}"'}
+
+# api.add_resource(CreateChatbot, '/api/v1/create-chatbot')
